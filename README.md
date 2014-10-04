@@ -3,6 +3,8 @@ react-rtc
 
 react-rtc is a react component that uses firebase to establish webRTC connections.
 
+[Simple demo](http://olavhn.github.io/react-rtc/)
+
 Usage
 ----
 
