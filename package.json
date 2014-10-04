@@ -1,0 +1,22 @@
+{
+  "name": "react-rtc",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OlavHN/react-rtc"
+  },
+  "description": "React firebase webrtc mockup",
+  "main": "dist/Rtc.js",
+  "author": "Olav Nymoen",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^0.11.2",
+    "firebase": "^1.0.24"
+  },
+  "devDependencies": {
+    "reactify": "^0.14.0",
+    "webpack": "^1.4.4",
+    "jsx": "^0.9.89",
+    "jsx-loader": "^0.11.2"
+  }
+}
