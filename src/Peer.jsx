@@ -25,11 +25,30 @@ var Peer = React.createClass({
       this.negotiatePeerConnection(localStream);
   },
 
+  componentWillUnmount: function() {
+    var pc = this.state.pc;
+    var remoteStream = this.props.remoteStream;
+    var fb = this.props.fb;
+    var id = this.props.id;
+
+    if (pc)
+      pc.close();
+
+    if (remoteStream)
+      remoteStream.stop();
+
+    if (fb && id)
+      fb.child(id).remove();
+  },
+
   componentWillReceiveProps: function(newProps) {
+
     var localStream = this.props.localStream;
 
-    if (localStream !== newProps.localStream)
+    if (localStream !== newProps.localStream) {
+      console.table([this.props, newProps]);
       this.handleNewStream(newProps.localStream);
+    }
   },
 
   handleNewStream: function(newStream) {
@@ -47,26 +66,19 @@ var Peer = React.createClass({
     fb.child(id).set(true);
 
     // Remove me if logging off
-    fb.child(id).onDisconnect().remove();
+    fb.onDisconnect().remove();
 
     // Check wether to send offer, listen to answer or ignore
     fb.on('child_added', function(snap) {
+      if (this._lifeCycleState !== 'MOUNTED')
+        return;
+
       var peer = snap.name();
 
       if (peer === id)
         return;
 
       fb.child(id).set(true);
-      var previousPeer = this.state.peer;
-      if (previousPeer) {
-        fb.child(previousPeer).child('answer').off();
-        fb.child(previousPeer).child('offer').off();
-        fb.child(previousPeer).child('candidates').off();
-      }
-
-      this.setState({
-        peer: peer
-      });
 
       var pc = this.initializePeerConnection(localStream);
       window.pc = pc;
@@ -80,6 +92,8 @@ var Peer = React.createClass({
           if (!answer)
             return;
 
+          fb.child(peer).child('answer').off();
+
           this.handleAnswer(pc, JSON.parse(answer));
         }.bind(this));
       } else {
@@ -89,6 +103,8 @@ var Peer = React.createClass({
 
           if (!offer)
             return;
+
+          fb.child(peer).child('offer').off();
 
           console.log('now Im answering')
           this.handleOffer(pc, JSON.parse(offer));
@@ -104,20 +120,12 @@ var Peer = React.createClass({
         if (!candidate)
           return;
 
+        if (this._lifeCycleState !== 'MOUNTED')
+          return;
+
         pc.addIceCandidate(new IceCandidate(JSON.parse(candidate)));
-      });
+      }.bind(this));
     }.bind(this));
-
-    // If it's us, remove the PC.
-    /*fb.on('child_removed', function(snap) {
-      var removedPeer = snap.name();
-      var peer = this.state.peer;
-      var localStream = this.props.localStream;
-
-      if (localStream && removedPeer === peer)
-        this.state.remoteStream.stop();
-
-    }.bind(this));*/
   },
 
   initializePeerConnection: function(localStream) {

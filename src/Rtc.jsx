@@ -19,11 +19,11 @@ var Rtc = React.createClass({
     };
   },
 
-  componentDidMount: function() {
+  componentWillMount: function() {
     // Get media
     var mediaOptions = {
-      video: true,
-      audio: true
+      video: this.props.disableVideo ? false : true,
+      audio: this.props.disableAudio ? false : true
     };
 
     navigator.getUserMedia(
@@ -36,6 +36,13 @@ var Rtc = React.createClass({
       function gUMerror(e) {
         console.error(e);
       });
+  },
+
+  componentWillUnmount: function() {
+    var localStream = this.props.localStream;
+
+    if (localStream)
+      localStream.stop();
   },
 
   render: function() {
